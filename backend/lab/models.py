@@ -7,3 +7,12 @@ class Photo(BaseModel):
     processed_photo_url: str
     timestamp: str
     user_id: int
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'original_photo_url': self.original_photo_url,
+            'processed_photo_url': self.processed_photo_url,
+            'timestamp': self.timestamp,
+            'user_id': self.user_id,
+        }
