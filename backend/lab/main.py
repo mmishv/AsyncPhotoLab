@@ -1,5 +1,6 @@
 import base64
 import json
+from datetime import timedelta
 from pathlib import Path
 import aiofiles
 import redis
@@ -10,14 +11,40 @@ from .tasks import process_photo
 
 app = FastAPI()
 
+
+@app.exception_handler(Exception)
+async def http_exception_handler(request, exc):
+    return JSONResponse(status_code=500, content={"detail": "Произошла ошибка на сервере."})
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+
 origins = ["http://localhost", "http://localhost:3000", "http://localhost:8000", ]
 
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"],
                    allow_headers=["*"], )
 
+app.add_exception_handler(Exception, http_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 UPLOAD_DIR = Path("photos")
+
+MAX_FILES_IN_UPLOAD_DIR = 2
+
+
+def remove_old_photos():
+    photos = list(UPLOAD_DIR.glob("*_processed.jpg")) + list(UPLOAD_DIR.glob("*_original.jpg"))
+    if len(photos) > MAX_FILES_IN_UPLOAD_DIR:
+        photos.sort(key=lambda x: x.stat().st_mtime)
+        for old_photo in photos[:len(photos) - MAX_FILES_IN_UPLOAD_DIR]:
+            old_photo.unlink()
+            photo_id = old_photo.stem.split('_')[0]
+            redis_client.delete(f'photo:{photo_id}')
 
 
 @app.post("/upload/")
@@ -38,6 +65,9 @@ async def upload_photo(file: UploadFile, user_id: int = 1):
         with processed_photo_path.open("wb") as f:
             f.write(processed_photo_bytes)
 
+        remove_old_photos()
+        redis_client.delete('processed_photos')
+        await get_processed_photos()
         return {"message": "Фотография успешно загружена и поставлена в очередь на обработку.",
                 "task_id": task_result['id']}
     else:
@@ -77,6 +107,17 @@ async def download_result(task_id: str):
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"detail": f"Произошла ошибка: {e}"})
+
+
+async def get_cached_processed_photos():
+    cached_photos = redis_client.get('processed_photos')
+    if cached_photos:
+        return json.loads(cached_photos)
+
+    processed_photos = await get_processed_photos()
+
+    redis_client.setex('processed_photos', timedelta(minutes=1), json.dumps(processed_photos))
+    return processed_photos
 
 
 @app.get("/photos/processed/")
