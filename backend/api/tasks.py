@@ -1,14 +1,12 @@
 import json
 from datetime import datetime
+from io import BytesIO
 
 from PIL import Image
-from io import BytesIO
-import redis
 
-from lab.models import Photo
-from celery_worker import celery_app
-
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+from .celery_worker import celery_app
+from .models.photo_model import Photo
+from .settings import redis_client
 
 
 # Apply a simple black-and-white filter
