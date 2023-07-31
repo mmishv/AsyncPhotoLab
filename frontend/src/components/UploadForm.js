@@ -21,10 +21,14 @@ const UploadForm = () => {
 
         const formData = new FormData();
         formData.append('file', selectedFile);
+        const email=localStorage.getItem('user_email')
 
         try {
             setIsLoading(true);
             const response = await fetch('/upload/', {
+                  headers: {
+                'email': email,
+            },
                 method: 'POST', body: formData,
             });
 

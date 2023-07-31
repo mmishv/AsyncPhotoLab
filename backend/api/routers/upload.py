@@ -1,19 +1,22 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, Header
 from starlette.responses import JSONResponse
 
 from api.tasks import process_photo
 from .result import get_processed_photos
 from config.settings import UPLOAD_DIR, redis_client
 from ..utils.redisdb import remove_old_photos
+from ..utils.user import get_user_by_email
 
 router = APIRouter()
 
 
 @router.post("/upload/")
-async def upload_photo(file: UploadFile, user_id: int = 1):
+async def upload_photo(file: UploadFile, email: str = Header(None)):
     if file.content_type.startswith('image/'):
         photo_bytes = await file.read()
 
+        user = get_user_by_email(email)
+        user_id = 0 if user is None else user.id
         result = process_photo.delay(photo_bytes, user_id)
         task_result, processed_photo_bytes = result.get()
 
