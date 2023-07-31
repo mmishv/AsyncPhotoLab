@@ -44,17 +44,6 @@ def authenticate_user(email: str, password: str) -> Optional[User]:
     return None
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
 def get_current_user(credentials: HTTPBasicCredentials = Depends(security)) -> Optional[User]:
     user = authenticate_user(credentials.username, credentials.password)
     if user is None:
@@ -75,9 +64,33 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> O
     return current_user
 
 
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
 def create_refresh_token(data: dict):
     to_encode = data.copy()
     expiration = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode.update({"exp": expiration})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def create_tokens_for_user(user: User):
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_data = {"sub": user.email}
+    access_token = create_access_token(data=access_token_data, expires_delta=access_token_expires)
+
+    refresh_token_data = {"sub": user.email}
+    refresh_token = create_refresh_token(data=refresh_token_data)
+
+    redis_client.set(user.email + "_refresh_token", refresh_token)
+
+    return access_token, refresh_token
