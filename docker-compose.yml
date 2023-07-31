@@ -1,0 +1,85 @@
+version: '3.10'
+
+services:
+  web:
+    container_name: web
+    build: ./backend/
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - my_network
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - my_network
+
+  frontend:
+    container_name: reactapp
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/public/:/usr/src/app/public/
+      - ./frontend/src/:/usr/src/app/src/
+    command: npm start
+    depends_on:
+      - web
+    networks:
+      - my_network
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./photos:/usr/src/web/photos
+    depends_on:
+      - web
+    networks:
+      - my_network
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: "rabbitmq:3.8"
+    ports:
+      - "5672:5672"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: secret-cookie
+      RABBITMQ_DEFAULT_USER: myuser
+      RABBITMQ_DEFAULT_PASS: mypassword
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - my_network
+  celery_worker:
+    restart: always
+    build:  ./backend/
+    command: celery -A api.tasks worker --loglevel=info
+    depends_on:
+      - rabbitmq
+    stdin_open: true
+    environment:
+      - EXECUTOR=Celery
+      - CELERY_BROKER=amqp://myuser:mypassword@rabbitmq:5672//
+
+networks:
+  my_network:
+    driver: bridge
+
+
+volumes:
+  redis_data:
+  rabbitmq_data:
