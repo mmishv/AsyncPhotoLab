@@ -6,7 +6,7 @@ from PIL import Image
 
 from .celery_worker import celery_app
 from .models.photo_model import Photo
-from config.redis_config import redis_client
+from .config.redis_config import redis_client
 
 
 # Apply a simple black-and-white filter

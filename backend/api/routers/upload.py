@@ -1,10 +1,10 @@
 from fastapi import APIRouter, UploadFile, Header
 from starlette.responses import JSONResponse
 
-from api.tasks import process_photo
-from config.upload_config import UPLOAD_DIR
+from ...api.tasks import process_photo
+from ..config.upload_config import UPLOAD_DIR
 from .result import get_processed_photos
-from config.redis_config import redis_client
+from ..config.redis_config import redis_client
 from ..utils.redisdb import remove_old_photos
 from ..utils.user import get_user_by_email
 
@@ -32,7 +32,8 @@ async def upload_photo(file: UploadFile, email: str = Header(None)):
             f.write(processed_photo_bytes)
 
         await remove_old_photos()
-        redis_client.delete('processed_photos')
+        redis = await redis_client()
+        await redis.delete('processed_photos')
         await get_processed_photos()
         return {"message": "Фотография успешно загружена и поставлена в очередь на обработку.",
                 "task_id": task_result['id']}

@@ -1,11 +1,9 @@
-import os
-
 from celery import Celery
 
-os.environ.setdefault('CELERY_CONFIG_MODULE', 'config.celeryconfig')
+broker_url = 'amqp://myuser:mypassword@rabbitmq:5672//'
+result_backend = 'redis://redis:6379/0'
 
-celery_app = Celery('photo_queue_project', broker='pyamqp://guest@localhost//', backend='redis://localhost:6379/0')
+celery_app = Celery('photo_queue_project', broker=broker_url, backend=result_backend, result_backend=result_backend,
+                    broker_connection_retry=True)
 
 celery_app.conf.task_default_queue = 'default'
-
-celery_app.config_from_envvar('CELERY_CONFIG_MODULE')

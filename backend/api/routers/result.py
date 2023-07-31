@@ -5,7 +5,7 @@ import aiofiles
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from config.upload_config import UPLOAD_DIR
+from ..config.upload_config import UPLOAD_DIR
 from ..utils.redisdb import get_photos
 from ..utils.user import get_user_by_email
 

@@ -9,7 +9,7 @@ const PhotoList = () => {
             .then(response => response.json())
             .then(data => setPhotos(JSON.parse(data)))
             .catch(error => console.error('Error:', error));
-    }, []);
+    },  [email]);
 
     return (<div className="photo-list">
         <div className="photo-list-header">

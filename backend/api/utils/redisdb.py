@@ -5,8 +5,8 @@ from datetime import timedelta
 import aiofiles
 from fastapi import HTTPException
 
-from config.redis_config import redis_client
-from config.upload_config import UPLOAD_DIR, MAX_FILES_IN_UPLOAD_DIR
+from ..config.redis_config import redis_client
+from ..config.upload_config import UPLOAD_DIR, MAX_FILES_IN_UPLOAD_DIR
 
 
 async def remove_old_photos():
