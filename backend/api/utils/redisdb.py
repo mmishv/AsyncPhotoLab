@@ -18,16 +18,20 @@ async def remove_old_photos():
             redis_client.delete(f'photo:{photo_id}')
 
 
-async def get_photos():
+async def get_photos(user_id: int = None):
     try:
         processed_photos = []
         for photo_path in UPLOAD_DIR.glob("*_processed.jpg"):
             photo_id = photo_path.stem.split('_')[0]
-            timestamp = json.loads(redis_client.get(f'photo:{photo_id}')).get('timestamp')
+            photo = json.loads(redis_client.get(f'photo:{photo_id}'))
+            timestamp = photo.get('timestamp')
+            if user_id is not None and photo.get('user_id') != user_id:
+                continue
             async with aiofiles.open(photo_path, mode='rb') as f:
                 photo_bytes = await f.read()
                 photo_base64 = base64.b64encode(photo_bytes).decode('utf-8')
-                processed_photos.append({"id": int(photo_id), "photo_bytes": photo_base64, 'timestamp': timestamp})
+                photo_data = {"id": int(photo_id), "photo_bytes": photo_base64, "timestamp": timestamp}
+                processed_photos.append(photo_data)
 
         redis_client.setex('processed_photos', timedelta(minutes=1), json.dumps(processed_photos))
         return json.dumps(processed_photos)

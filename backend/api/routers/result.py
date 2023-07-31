@@ -7,6 +7,7 @@ from starlette.responses import JSONResponse
 
 from config.settings import UPLOAD_DIR
 from ..utils.redisdb import get_photos
+from ..utils.user import get_user_by_email
 
 router = APIRouter()
 
@@ -33,5 +34,14 @@ async def get_result(task_id: str):
 
 
 @router.get("/photos/processed/")
+async def get_user_processed_photos(email: str = None):
+    if email is not None:
+        user = get_user_by_email(email)
+        if user is None:
+            return JSONResponse(status_code=404, content={"detail": "Пользователь не найден."})
+        return await get_photos(user.id)
+
+
+@router.get("/photos/")
 async def get_processed_photos():
     return await get_photos()

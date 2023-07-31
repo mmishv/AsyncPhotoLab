@@ -3,9 +3,9 @@ import '../styles/PhotoList.css';
 
 const PhotoList = () => {
     const [photos, setPhotos] = useState([]);
-
+    const email = localStorage.getItem('user_email')
     useEffect(() => {
-        fetch('/photos/processed/')
+        fetch(`/photos/processed/?email=${email}`)
             .then(response => response.json())
             .then(data => setPhotos(JSON.parse(data)))
             .catch(error => console.error('Error:', error));
