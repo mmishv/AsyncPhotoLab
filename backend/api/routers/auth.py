@@ -1,5 +1,4 @@
 import json
-import uuid
 from datetime import timedelta, datetime
 
 import bcrypt
@@ -7,10 +6,10 @@ import jwt
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBasicCredentials, HTTPBasic
 
-from api.models.user_model import User
-from config.settings import (redis_client, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM, )
+from api.models.user_model import User, UserCreate
 from api.utils.user import get_current_user, authenticate_user, get_user_by_email, create_access_token, \
     create_refresh_token, UserAlreadyExistsException, InvalidCredentialsException
+from config.settings import (redis_client, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM, )
 
 router = APIRouter()
 
@@ -18,26 +17,26 @@ security = HTTPBasic()
 
 
 @router.post("/register/", response_model=User)
-async def register_user(user: User):
+async def register_user(user: UserCreate):
     existing_user = get_user_by_email(user.email)
     if existing_user:
         raise UserAlreadyExistsException(user.email)
 
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(user.password.encode("utf-8"), salt)
-    user.password_hash = hashed_password.decode("utf-8")
+    password_hash = hashed_password.decode("utf-8")
 
-    user.id = str(uuid.uuid4())
+    user_data = {"id": redis_client.incr("user_id"), "email": user.email, "hashed_password": password_hash,
+                 "first_name": user.first_name, "last_name": user.last_name, "is_active": True, "is_superuser": False, }
+    redis_client.set(user.email, json.dumps(user_data))
 
-    user_data = json.dumps(user.model_dump())
-    redis_client.set(user.email, user_data)
-    return user
+    return User(**user_data)
 
 
 @router.post("/login/")
 async def login(credentials: HTTPBasicCredentials = Depends(security)):
     user = get_user_by_email(credentials.username)
-    if user is None or not bcrypt.checkpw(credentials.password.encode("utf-8"), user.password_hash.encode("utf-8")):
+    if user is None or not bcrypt.checkpw(credentials.password.encode("utf-8"), user.hashed_password.encode("utf-8")):
         raise InvalidCredentialsException()
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

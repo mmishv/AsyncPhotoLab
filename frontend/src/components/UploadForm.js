@@ -1,5 +1,7 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import '../styles/UploadForm.css';
+import {Link} from "react-router-dom";
+import axios from "axios";
 
 const UploadForm = () => {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -93,12 +95,26 @@ const UploadForm = () => {
             setResultData(null);
         }
     }, [selectedFile]);
+    const handleLogout = async () => {
+        try {
+            await axios.post('/logout/');
+            localStorage.removeItem('access_token');
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    };
+    const isAuthenticated = localStorage.getItem('access_token');
 
     return (<div className="upload-container">
         <div className="nav">
-            <a href="/photos" className="main-link">
+            {isAuthenticated ? (<><a href="/photos" className="main-link">
                 Ранее обработанные
             </a>
+            <Link to="#" className="main-link" onClick={handleLogout}>Logout</Link> </>) : (<>
+                <Link to="/login">Login</Link>
+                <Link to="/signup">Signup</Link>
+            </>)}
         </div>
         <div className="upload-form">
             <h2>Загрузить фотографию</h2>

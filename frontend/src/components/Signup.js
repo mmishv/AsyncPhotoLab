@@ -18,7 +18,7 @@ function Signup() {
         }
 
         try {
-            const response = await axios.post('/auth/signup/', {
+            const response = await axios.post('/register/', {
                 email,
                 password: password1,
                 first_name: firstName,
@@ -28,7 +28,7 @@ function Signup() {
             localStorage.setItem('access_token', JSON.stringify(response.data));
 
             console.log(response.data);
-            window.location.href = '/tasks';
+            window.location.href = '/';
         } catch (error) {
             console.error(error.response.data);
         }

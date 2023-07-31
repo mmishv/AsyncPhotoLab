@@ -7,6 +7,7 @@ from starlette.responses import JSONResponse
 from .routers.download import router as download_router
 from .routers.result import router as result_router
 from .routers.upload import router as upload_router
+from .routers.auth import router as auth_router
 from config.settings import origins
 
 app = FastAPI()
@@ -37,3 +38,4 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.include_router(upload_router)
 app.include_router(result_router)
 app.include_router(download_router)
+app.include_router(auth_router)

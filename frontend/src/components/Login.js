@@ -10,15 +10,17 @@ const Login = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.post('/auth/login/', {
-        email,
-        password,
+      const token = btoa(`${email}:${password}`);
+      const response = await axios.post('/login/', {}, {
+        headers: {
+          Authorization: `Basic ${token}`,
+        }
       });
 
-      localStorage.setItem('access_token',  JSON.stringify(response.data) );
+      localStorage.setItem('access_token', JSON.stringify(response.data));
 
       console.log(response.data);
-      window.location.href = '/tasks';
+      window.location.href = '/';
     } catch (error) {
       console.error(error.response.data);
     }
