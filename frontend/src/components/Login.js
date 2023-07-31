@@ -17,7 +17,8 @@ const Login = () => {
         }
       });
 
-      localStorage.setItem('access_token', JSON.stringify(response.data));
+       localStorage.setItem('access_token', JSON.stringify(response.data.access_token));
+       localStorage.setItem('user_email', email);
 
       console.log(response.data);
       window.location.href = '/';

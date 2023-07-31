@@ -97,8 +97,10 @@ const UploadForm = () => {
     }, [selectedFile]);
     const handleLogout = async () => {
         try {
-            await axios.post('/logout/');
+            const userEmail = localStorage.getItem('user_email');
+            await axios.post(`/logout/?email=${userEmail}`);
             localStorage.removeItem('access_token');
+            localStorage.removeItem('user_email');
             window.location.href = '/';
         } catch (error) {
             console.error('Error logging out:', error);
@@ -111,9 +113,9 @@ const UploadForm = () => {
             {isAuthenticated ? (<><a href="/photos" className="main-link">
                 Ранее обработанные
             </a>
-            <Link to="#" className="main-link" onClick={handleLogout}>Logout</Link> </>) : (<>
-                <Link to="/login">Login</Link>
-                <Link to="/signup">Signup</Link>
+                <Link to="#" className="main-link" onClick={handleLogout}>Logout</Link> </>) : (<>
+                <Link to="/login" className="main-link">Login</Link>
+                <Link to="/signup" className="main-link">Signup</Link>
             </>)}
         </div>
         <div className="upload-form">
