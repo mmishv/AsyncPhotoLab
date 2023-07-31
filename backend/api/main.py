@@ -1,5 +1,4 @@
 import logging
-import json
 
 from fastapi import HTTPException, FastAPI
 from starlette.middleware.cors import CORSMiddleware
@@ -8,7 +7,7 @@ from starlette.responses import JSONResponse
 from .routers.download import router as download_router
 from .routers.result import router as result_router
 from .routers.upload import router as upload_router
-from .settings import origins
+from config.settings import origins
 
 app = FastAPI()
 

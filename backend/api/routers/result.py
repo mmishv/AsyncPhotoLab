@@ -5,7 +5,7 @@ import aiofiles
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from ..settings import UPLOAD_DIR
+from config.settings import UPLOAD_DIR
 from ..utils.redisdb import get_photos
 
 router = APIRouter()

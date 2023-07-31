@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBasicCredentials, HTTPBasic
 
 from api.models.user_model import User
-from api.settings import (redis_client, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM, )
+from config.settings import (redis_client, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM, )
 from api.utils.user import get_current_user, authenticate_user, get_user_by_email, create_access_token, \
     create_refresh_token, UserAlreadyExistsException, InvalidCredentialsException
 

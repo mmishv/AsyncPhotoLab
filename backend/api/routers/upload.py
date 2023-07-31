@@ -3,7 +3,7 @@ from starlette.responses import JSONResponse
 
 from api.tasks import process_photo
 from .result import get_processed_photos
-from ..settings import UPLOAD_DIR, redis_client
+from config.settings import UPLOAD_DIR, redis_client
 from ..utils.redisdb import remove_old_photos
 
 router = APIRouter()
