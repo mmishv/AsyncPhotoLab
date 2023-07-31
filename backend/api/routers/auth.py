@@ -7,7 +7,7 @@ from fastapi.security import HTTPBasicCredentials, HTTPBasic
 from api.models.user_model import User, UserCreate
 from api.utils.user import get_current_user, authenticate_user, get_user_by_email, UserAlreadyExistsException, \
     InvalidCredentialsException, create_tokens_for_user
-from config.settings import (redis_client)
+from config.redis_config import redis_client
 
 router = APIRouter()
 

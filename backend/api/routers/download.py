@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from starlette.responses import JSONResponse, FileResponse
 
-from config.settings import UPLOAD_DIR
+from config.upload_config import UPLOAD_DIR
 
 router = APIRouter()
 

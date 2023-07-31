@@ -9,7 +9,8 @@ from fastapi.security import HTTPBasicCredentials, HTTPBasic
 from starlette import status
 
 from api.models.user_model import User
-from config.settings import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY, redis_client, REFRESH_TOKEN_EXPIRE_DAYS
+from config.app_config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY, REFRESH_TOKEN_EXPIRE_DAYS
+from config.redis_config import redis_client
 
 security = HTTPBasic()
 
